@@ -1,6 +1,6 @@
 {
 	"name": "pi-agent-system",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Agent profile extension for the pi coding agent. Reads SANEPI_AGENT_TYPE / PI_AGENT_TYPE, loads markdown agent profiles, filters tools, and appends per-agent prompt fragments.",
 	"type": "module",
 	"license": "MIT",

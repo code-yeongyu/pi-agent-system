@@ -17,6 +17,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -44,6 +46,9 @@ jobs:
         run: npm pack --dry-run
 
       - name: Publish to npm
+        if: env.NODE_AUTH_TOKEN != ''
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Skip npm publish without token
+        if: env.NODE_AUTH_TOKEN == ''
+        run: echo "NODE_AUTH_TOKEN is not configured; skipping npm publish."

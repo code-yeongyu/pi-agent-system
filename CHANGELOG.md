@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2026-05-11
+
+### Changed
+
+- Made the publish workflow skip npm publishing when `NODE_AUTH_TOKEN` is not configured while still running release validation.
+
 ## [0.1.0] - 2026-05-11
 
 ### Added
