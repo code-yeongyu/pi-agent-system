@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-05-11
+
+### Fixed
+
+- Fixed release publishing guard so the npm publish step exits successfully when `NODE_AUTH_TOKEN` is absent.
+
 ## [0.1.1] - 2026-05-11
 
 ### Changed
