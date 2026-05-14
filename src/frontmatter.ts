@@ -1,7 +1,7 @@
 import { parse } from "yaml";
 
-type ParsedFrontmatter<T extends Record<string, unknown>> = {
-	frontmatter: T;
+type ParsedFrontmatter = {
+	frontmatter: Record<string, unknown>;
 	body: string;
 };
 
@@ -25,13 +25,15 @@ const extractFrontmatter = (content: string): { yamlString: string | null; body:
 	};
 };
 
-export const parseFrontmatter = <T extends Record<string, unknown> = Record<string, unknown>>(
-	content: string,
-): ParsedFrontmatter<T> => {
+export const parseFrontmatter = (content: string): ParsedFrontmatter => {
 	const { yamlString, body } = extractFrontmatter(content);
 	if (!yamlString) {
-		return { frontmatter: {} as T, body };
+		return { frontmatter: {}, body };
 	}
 	const parsed = parse(yamlString);
-	return { frontmatter: (parsed ?? {}) as T, body };
+	return { frontmatter: isRecord(parsed) ? parsed : {}, body };
 };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}

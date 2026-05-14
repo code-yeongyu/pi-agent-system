@@ -56,4 +56,4 @@ export { loadAgentDefaultPermissions, loadAgentsFromDirectory, loadAllAgents } f
 export { evaluate, fromConfig, merge } from "./permission.js";
 export { AgentRegistry, createRegistry } from "./registry.js";
 export type { Action, PermissionConfig, Rule, Ruleset } from "./types.js";
-export { Wildcard } from "./wildcard.js";
+export { matchWildcard } from "./wildcard.js";

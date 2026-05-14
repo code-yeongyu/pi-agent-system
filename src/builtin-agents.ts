@@ -1,4 +1,4 @@
-import type { AgentInfo, AgentMode } from "./agent-types.js";
+import type { AgentInfo } from "./agent-types.js";
 import { fromConfig, merge } from "./permission.js";
 
 export const BUILTIN_AGENTS: Record<string, AgentInfo> = {
@@ -6,14 +6,14 @@ export const BUILTIN_AGENTS: Record<string, AgentInfo> = {
 		name: "general",
 		description:
 			"General-purpose agent for complex multi-step tasks. Use to execute multiple units of work in parallel.",
-		mode: "subagent" as AgentMode,
+		mode: "subagent",
 		native: true,
 		permission: fromConfig({ "*": "allow", task: "deny", todowrite: "deny" }),
 	},
 	explore: {
 		name: "explore",
 		description: "Fast codebase exploration agent. Read-only. Finds files, searches code, reads contents.",
-		mode: "subagent" as AgentMode,
+		mode: "subagent",
 		native: true,
 		permission: merge(
 			fromConfig({ "*": "deny" }),

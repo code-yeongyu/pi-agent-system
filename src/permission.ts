@@ -1,5 +1,5 @@
 import type { PermissionConfig, Rule, Ruleset } from "./types.js";
-import { Wildcard } from "./wildcard.js";
+import { matchWildcard } from "./wildcard.js";
 
 declare global {
 	interface Array<T> {
@@ -13,7 +13,7 @@ declare global {
 
 export function evaluate(permission: string, pattern: string, ...rulesets: Ruleset[]): Rule {
 	const matchedRule = rulesets.flat().findLast((rule) => {
-		return Wildcard.match(permission, rule.permission) && Wildcard.match(pattern, rule.pattern);
+		return matchWildcard(permission, rule.permission) && matchWildcard(pattern, rule.pattern);
 	});
 
 	if (matchedRule) {

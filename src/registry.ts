@@ -1,7 +1,7 @@
-import type { AgentInfo, AgentMode } from "./agent-types.js";
+import type { AgentInfo } from "./agent-types.js";
 import { BUILTIN_AGENTS } from "./builtin-agents.js";
 import { loadAllAgents } from "./loader.js";
-import { fromConfig, merge } from "./permission.js";
+import { merge } from "./permission.js";
 
 export class AgentRegistry {
 	private agents: Map<string, AgentInfo>;
@@ -37,8 +37,8 @@ export async function createRegistry(cwd: string): Promise<AgentRegistry> {
 	for (const [key, custom] of Object.entries(customAgents)) {
 		const existing = agents.get(key) ?? {
 			name: key,
-			mode: "all" as AgentMode,
-			permission: merge(fromConfig({})),
+			mode: "all",
+			permission: [],
 			native: false,
 		};
 		agents.set(key, {

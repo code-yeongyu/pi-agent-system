@@ -1,7 +1,8 @@
 import { type Static, Type } from "typebox";
 import { Compile } from "typebox/compile";
+import { AgentConfigValidationError } from "./errors.js";
 import { fromConfig } from "./permission.js";
-import type { PermissionConfig, Ruleset } from "./types.js";
+import type { Action, PermissionConfig, Ruleset } from "./types.js";
 
 export const AgentModeSchema = Type.Union([Type.Literal("subagent"), Type.Literal("primary"), Type.Literal("all")]);
 export type AgentMode = Static<typeof AgentModeSchema>;
@@ -33,7 +34,51 @@ export type AgentInfo = {
 	native: boolean;
 };
 
-export function validateAgentConfig(name: string, frontmatter: AgentFrontmatter, body: string): AgentInfo | Error {
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isAction(value: unknown): value is Action {
+	return value === "allow" || value === "deny" || value === "ask";
+}
+
+function normalizePermissionConfig(raw: unknown): PermissionConfig {
+	if (!isRecord(raw)) {
+		return {};
+	}
+
+	const config: PermissionConfig = {};
+	for (const [permission, value] of Object.entries(raw)) {
+		if (isAction(value)) {
+			config[permission] = value;
+			continue;
+		}
+
+		if (!isRecord(value)) {
+			continue;
+		}
+
+		const patterns: Record<string, "allow" | "deny" | "ask"> = {};
+		for (const [pattern, action] of Object.entries(value)) {
+			if (isAction(action)) {
+				patterns[pattern] = action;
+			}
+		}
+		config[permission] = patterns;
+	}
+
+	return config;
+}
+
+function readAgentMode(value: unknown): AgentMode {
+	return value === "subagent" || value === "primary" || value === "all" ? value : "all";
+}
+
+export function validateAgentConfig(
+	name: string,
+	frontmatter: unknown,
+	body: string,
+): AgentInfo | AgentConfigValidationError {
 	const isValid = CompiledAgentFrontmatterSchema.Check(frontmatter);
 	if (!isValid) {
 		const errors = CompiledAgentFrontmatterSchema.Errors(frontmatter);
@@ -41,17 +86,22 @@ export function validateAgentConfig(name: string, frontmatter: AgentFrontmatter,
 		for (const error of errors) {
 			errorMessages.push(`${error.instancePath}: ${error.message}`);
 		}
-		return new Error(`Invalid agent config: ${errorMessages.join(", ")}`);
+		return new AgentConfigValidationError(`Invalid agent config: ${errorMessages.join(", ")}`);
 	}
+
+	const frontmatterRecord = isRecord(frontmatter) ? frontmatter : {};
+	const description = typeof frontmatterRecord.description === "string" ? frontmatterRecord.description : undefined;
+	const model = typeof frontmatterRecord.model === "string" ? frontmatterRecord.model : undefined;
+	const temperature = typeof frontmatterRecord.temperature === "number" ? frontmatterRecord.temperature : undefined;
 
 	const agentInfo: AgentInfo = {
 		name,
-		description: frontmatter.description,
-		mode: frontmatter.mode ?? "all",
-		model: frontmatter.model,
-		temperature: frontmatter.temperature,
+		description,
+		mode: readAgentMode(frontmatterRecord.mode),
+		model,
+		temperature,
 		prompt: body,
-		permission: fromConfig((frontmatter.tools ?? {}) as PermissionConfig),
+		permission: fromConfig(normalizePermissionConfig(frontmatterRecord.tools)),
 		native: false,
 	};
 
